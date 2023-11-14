@@ -6,18 +6,28 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>690</width>
+    <width>700</width>
     <height>800</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>640</width>
-    <height>360</height>
+    <width>280</width>
+    <height>340</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>700</width>
+    <height>800</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>coreSTAT</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>resources/fime-logo-1.png</normaloff>resources/fime-logo-1.png</iconset>
   </property>
   <property name="windowOpacity">
    <double>1.000000000000000</double>
@@ -29,177 +39,193 @@
    <widget class="PlotWidget" name="currentwidget" native="true">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>310</y>
-      <width>671</width>
-      <height>441</height>
+      <x>20</x>
+      <y>330</y>
+      <width>661</width>
+      <height>421</height>
      </rect>
     </property>
    </widget>
    <widget class="PlotWidget" name="potentialwidget" native="true">
     <property name="geometry">
      <rect>
-      <x>300</x>
-      <y>10</y>
-      <width>381</width>
-      <height>281</height>
+      <x>280</x>
+      <y>20</y>
+      <width>401</width>
+      <height>291</height>
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="startButton">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>100</x>
-      <y>250</y>
-      <width>80</width>
-      <height>25</height>
+      <x>20</x>
+      <y>20</y>
+      <width>241</width>
+      <height>297</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Iniciar</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="cancelButton">
-    <property name="geometry">
-     <rect>
-      <x>190</x>
-      <y>250</y>
-      <width>80</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Cancelar</string>
-    </property>
-   </widget>
-   <widget class="QSplitter" name="splitter">
-    <property name="geometry">
-     <rect>
-      <x>21</x>
-      <y>21</y>
-      <width>251</width>
-      <height>222</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
-    </property>
-    <widget class="QLabel" name="connectionsectiontitlelabel">
-     <property name="text">
-      <string>Conexión</string>
-     </property>
-    </widget>
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-    <widget class="QWidget" name="">
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="0">
-       <widget class="QLabel" name="baudratelabel">
-        <property name="text">
-         <string>Baudios:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="baudratecomboBox">
-        <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="connectionsectiontitlelabel">
+       <property name="text">
+        <string>Conexión</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="portlabel">
          <property name="text">
-          <string>9600</string>
+          <string>Puerto serial:</string>
          </property>
-        </item>
-        <item>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="portcomboBox"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="baudratelabel">
          <property name="text">
-          <string>19200</string>
+          <string>Baudios:</string>
          </property>
-        </item>
-        <item>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="baudratecomboBox">
+         <item>
+          <property name="text">
+           <string>9600</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>19200</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>57600</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>115200</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>256000</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>308</width>
+         <height>18</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="parameterssectionlabel">
+       <property name="text">
+        <string>Parámetros</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QLabel" name="speedlabel">
          <property name="text">
-          <string>57600</string>
+          <string>Velocidad (mV/s):</string>
          </property>
-        </item>
-        <item>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="speedlineEdit"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="samplinglabel">
          <property name="text">
-          <string>115200</string>
+          <string>Muestreo (Hz):</string>
          </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>256000</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="portcomboBox"/>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="portlabel">
-        <property name="text">
-         <string>Puerto serial:</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLabel" name="parameterssectionlabel">
-     <property name="text">
-      <string>Parámetros</string>
-     </property>
-    </widget>
-    <widget class="Line" name="line_2">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-    <widget class="QWidget" name="">
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
-       <widget class="QLabel" name="speedlabel">
-        <property name="text">
-         <string>Velocidad (mV/s):</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="speedlineEdit"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="samplinglabel">
-        <property name="text">
-         <string>Muestreo (Hz):</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="samplinglineEdit"/>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLabel" name="vrangelabel">
-     <property name="text">
-      <string>Rango de Potencial (V):</string>
-     </property>
-    </widget>
-    <widget class="QWidget" name="">
-     <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="0">
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="samplinglineEdit"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="vrangelabel">
+       <property name="text">
+        <string>Rango de Potencial (V):</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSplitter" name="splitter_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
        <widget class="QLineEdit" name="lowerrangelineEdit"/>
-      </item>
-      <item row="0" column="1">
        <widget class="QLabel" name="label">
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
         <property name="text">
          <string>a</string>
         </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
        </widget>
-      </item>
-      <item row="0" column="2">
        <widget class="QLineEdit" name="upperrangelineEdit_2"/>
-      </item>
-     </layout>
-    </widget>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QPushButton" name="startButton">
+        <property name="text">
+         <string>Iniciar</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="cancelButton">
+        <property name="text">
+         <string>Cancelar</string>
+        </property>
+       </widget>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
