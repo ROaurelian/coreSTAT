@@ -8,6 +8,7 @@ importlib-metadata==6.8.0
 isort==5.12.0
 jedi==0.19.1
 mccabe==0.7.0
+numpy==1.26.2
 packaging==23.2
 parso==0.8.3
 platformdirs==4.0.0
@@ -21,6 +22,8 @@ pyqt5-plugins==5.15.9.2.3
 PyQt5-Qt5==5.15.2
 PyQt5-sip==12.13.0
 pyqt5-tools==5.15.9.3.3
+pyqtgraph==0.13.3
+pyserial==3.5
 PySide6==6.6.0
 PySide6-Addons==6.6.0
 PySide6-Essentials==6.6.0
