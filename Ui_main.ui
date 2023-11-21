@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>700</width>
-    <height>800</height>
+    <width>800</width>
+    <height>900</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>280</width>
-    <height>340</height>
+    <width>380</width>
+    <height>375</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>700</width>
-    <height>800</height>
+    <width>800</width>
+    <height>900</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -40,29 +40,29 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>330</y>
-      <width>661</width>
-      <height>421</height>
+      <y>360</y>
+      <width>761</width>
+      <height>491</height>
      </rect>
     </property>
    </widget>
    <widget class="PlotWidget" name="potentialwidget" native="true">
     <property name="geometry">
      <rect>
-      <x>280</x>
-      <y>20</y>
+      <x>380</x>
+      <y>0</y>
       <width>401</width>
-      <height>291</height>
+      <height>331</height>
      </rect>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>20</y>
-      <width>241</width>
-      <height>297</height>
+      <width>354</width>
+      <height>333</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -169,15 +169,36 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="speedlineEdit"/>
        </item>
-       <item row="1" column="0">
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="samplinglineEdit"/>
+       </item>
+       <item row="3" column="0">
         <widget class="QLabel" name="samplinglabel">
          <property name="text">
           <string>Muestreo (Hz):</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="samplinglineEdit"/>
+       <item row="4" column="0">
+        <widget class="QLabel" name="modelabel">
+         <property name="text">
+          <string>Modo</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="modecomboBox">
+         <item>
+          <property name="text">
+           <string>Voltametría de barrido linear</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Voltametría cíclica</string>
+          </property>
+         </item>
+        </widget>
        </item>
       </layout>
      </item>
