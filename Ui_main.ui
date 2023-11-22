@@ -40,18 +40,18 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>360</y>
+      <y>370</y>
       <width>761</width>
-      <height>491</height>
+      <height>481</height>
      </rect>
     </property>
    </widget>
    <widget class="PlotWidget" name="potentialwidget" native="true">
     <property name="geometry">
      <rect>
-      <x>380</x>
-      <y>0</y>
-      <width>401</width>
+      <x>390</x>
+      <y>20</y>
+      <width>391</width>
       <height>331</height>
      </rect>
     </property>
@@ -103,12 +103,7 @@
         <widget class="QComboBox" name="baudratecomboBox">
          <item>
           <property name="text">
-           <string>9600</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>19200</string>
+           <string>115200</string>
           </property>
          </item>
          <item>
@@ -118,12 +113,7 @@
          </item>
          <item>
           <property name="text">
-           <string>115200</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>256000</string>
+           <string>19200</string>
           </property>
          </item>
         </widget>
@@ -166,16 +156,10 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="speedlineEdit"/>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLineEdit" name="samplinglineEdit"/>
-       </item>
        <item row="3" column="0">
         <widget class="QLabel" name="samplinglabel">
          <property name="text">
-          <string>Muestreo (Hz):</string>
+          <string>Muestreo (kS/s):</string>
          </property>
         </widget>
        </item>
@@ -196,6 +180,84 @@
          <item>
           <property name="text">
            <string>Voltametría cíclica</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="speedcomboBox">
+         <item>
+          <property name="text">
+           <string>10</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>20</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>50</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>100</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>200</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>250</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>300</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>400</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>500</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="samplingcomboBox">
+         <item>
+          <property name="text">
+           <string>500</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>800</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1000</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1200</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1400</string>
           </property>
          </item>
         </widget>
@@ -226,7 +288,7 @@
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
-       <widget class="QLineEdit" name="upperrangelineEdit_2"/>
+       <widget class="QLineEdit" name="upperrangelineEdit"/>
       </widget>
      </item>
      <item>
