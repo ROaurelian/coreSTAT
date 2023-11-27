@@ -4,6 +4,31 @@ from PyQt5.QtCore import QTimer
 import serial.tools.list_ports
 import serial
 from mainWindow import Ui_MainWindow
+import numpy as np
+import math
+
+num_elements = 1400  # number of elements in each array
+v_start = -1.0       # start voltage
+v_end = 1.0          # end voltage      
+
+# Function to simulate current response with a sigmoidal shape and peak
+def simulate_current(v_array, peak_pos, peak_height, peak_width):
+    # Simulate redox peak
+    gauss = peak_height * np.exp(-((v_array - peak_pos) ** 2) / (2 * peak_width ** 2))
+    log_argument = v_array - peak_pos
+    log_argument[log_argument <= 0] = np.min(v_array[v_array > 0])
+    log = 10*np.log(log_argument)+peak_height/2
+    return gauss + log
+
+def add_noise_with_max_error(current_array, max_error_percent=4):
+    max_error = max_error_percent / 100.0
+    # Calculate the noise level for each point (5% of the current value)
+    noise_level = max_error * current_array
+    # Generate random noise within the ±5% range for each point
+    noise = np.random.uniform(-1, 1, size=current_array.shape) * noise_level
+    # Add this noise to the original current values
+    noisy_current = current_array + noise
+    return noisy_current
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -15,12 +40,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.windowRefreshTimer.start(500)
         self.statusBar().showMessage("Desconectado") 
 
+        self.lowerrangelineEdit.setText(str(-1.00))
+        self.upperrangelineEdit.setText(str(1.00))
+
         self.startButton.clicked.connect(self.startClick)
         self.cancelButton.clicked.connect(self.stopClick)
-
-        """ time = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9] 
-        temperature = [30, 32, 34, 32, 33, 31, 29, 32, 35, 30, 38]
-        self.currentwidget.plot(time, temperature) """
 
     def startClick(self):
         self.statusBar().showMessage("Conectando...")
@@ -41,9 +65,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.startButton.setEnabled(True)
 
         # Params checking
-        minPotential = -5.00
-        maxPotential = -5.00
-        minRange = 0.20
+        minPotential = -1.00
+        maxPotential = 1.00
+        minRange = 0.10
 
         scanRate = int(self.speedcomboBox.currentText())
         samplingRate = int(self.samplingcomboBox.currentText())
@@ -68,9 +92,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lowerrangelineEdit.setText(str(lowerRange))
         self.upperrangelineEdit.setText(str(upperRange))
 
-        self.serialReadTimer = QTimer(self)
+        # Generate voltage array with a linear sweep forward and reverse
+        voltage_array = np.linspace(v_start, v_end, num_elements)
+        
+        peak_height = [160, 150, 130, 100, 75]
+        peak_pos = [-0.15, -0.16, -0.17, -0.18, -0.19]
+
+        current_arrays = []
+        for i in range(5):  # Simulate 5 different scan rates
+            peak_width = 0.05 + i*0.01  # Change the peak width for each scan rate
+            current = simulate_current(voltage_array, peak_pos[i], peak_height[i], peak_width)
+            noisy_current_array = add_noise_with_max_error(current)
+            current_arrays.append(noisy_current_array)
+
+        # Make sure all arrays have 1400 elements
+        voltage_array = np.tile(voltage_array, (int(np.ceil(1400/len(voltage_array))),))[:1400]
+        current_arrays = [np.tile(i, (int(np.ceil(1400/len(i))),))[:1400] for i in current_arrays]
+        self.currentwidget.plot(voltage_array, current_arrays[0])
+        self.potentialwidget.plot(voltage_array)
+
+    """     self.serialReadTimer = QTimer(self)
         self.serialReadTimer.timeout.connect(self.read_from_serial)
-        self.serialReadTimer.start(20)
+        self.serialReadTimer.start(20) """
     
     def read_from_serial(self):
         if self.serialPortHandle.isOpen():

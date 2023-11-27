@@ -221,16 +221,6 @@
            <string>300</string>
           </property>
          </item>
-         <item>
-          <property name="text">
-           <string>400</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>500</string>
-          </property>
-         </item>
         </widget>
        </item>
        <item row="3" column="1">
