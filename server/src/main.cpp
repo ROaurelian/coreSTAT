@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
-bool instructionReceivedFlag = false;
+#define PWM_PIN 10
+#define ADC_PIN A0
 
 void clearSerialBuffer() {
   while (Serial.available() > 0) { 
@@ -9,26 +10,25 @@ void clearSerialBuffer() {
 }
 
 void setup() {
+  TCCR1B = TCCR1B & B11111000 | B00000001; //Set dividers to change PWM frequency 3.1 khz
   Serial.begin(115200);
+  pinMode(PWM_PIN,OUTPUT);
+  pinMode(ADC_PIN,INPUT);
 }
 
 void loop() {
-  while (instructionReceivedFlag == false) {
-    if (Serial.available() >= 4) { // Check if 4 bytes are available
-      uint8_t values[4];
-      for (int i = 0; i < 4; i++) {
-        values[i] = Serial.read();
-      }
-
-    // Send data back as a hex string
-    for (int i = 0; i < 4; i++) {
-      if (values[i] < 16) {
-        Serial.print('0'); // Print leading zero for values less than 16
-      }
-      Serial.print(values[i], HEX);
-    }
-    Serial.println(); // End the line
-    delay(1000);
-    }
+  if (Serial.available() > 0) {
+    uint8_t voltage;
+    voltage = Serial.read();
+    analogWrite(PWM_PIN, voltage);
   }
+  /* // Send data back as a hex string
+  for (int i = 0; i < 4; i++) {
+    if (values[i] < 16) {
+      Serial.print('0'); // Print leading zero for values less than 16
+    }
+    Serial.print(values[i], HEX);
+  }
+  Serial.println(); // End the line
+  delay(1000); */
 }

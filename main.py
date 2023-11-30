@@ -48,16 +48,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # LImitation of sampling rate based on baud rate
         maxSamplingRate = 0
         if baudrate == "9600":
-            maxSamplingRate = 0.96
+            maxSamplingRate = 0.48
         elif baudrate == "19200":
-            maxSamplingRate = 1.92
+            maxSamplingRate = 0.96
         elif baudrate == "57600":
-            maxSamplingRate = 5.76
+            maxSamplingRate = 2.88
         elif baudrate == "115200":
-            maxSamplingRate = 11.52
+            maxSamplingRate = 5.76
 
         if float(self.samplingcomboBox.currentText()) > maxSamplingRate:
-            self.statusBar().showMessage(f"Velocidad de muestreo no válida (Máxima velocidad de muestreo: {maxSamplingRate}) kS/s")
+            self.statusBar().showMessage(f"Velocidad de muestreo no válida con baudrate (Máxima velocidad de muestreo: {maxSamplingRate}) kS/s")
             self.startButton.setEnabled(True)
             return
 
@@ -96,42 +96,47 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.startButton.setEnabled(True)
         time.sleep(2)  # Wait for the connection to initialize
 
-        data = bytearray(self.format_data())
-        self.write_to_serial(data)
-
+        # Send voltage values to apply to the serial port
         self.plotPotential()
+        self.statusBar().showMessage("Recibiendo...")
+        self.period = round(float(1/(self.samplingRate*1000)),3)
+        voltagePWM = (self.voltage_array + 1) * 127
+        for i in range(len(voltagePWM)):
+            self.write_to_serial(bytes([int(voltagePWM[i])]))
+            time.sleep(self.period)
+            # self.read_from_serial()
 
-
-        #self.read_from_serial()
 
 
     """     self.serialReadTimer = QTimer(self)
         self.serialReadTimer.timeout.connect(self.read_from_serial)
         self.serialReadTimer.start(20) """
     
+
+    
     def plotPotential(self):
         v_start = round(float(self.lowerrangelineEdit.text()), 2)
         v_end = round(float(self.upperrangelineEdit.text()), 2)
         scanRate = int(self.speedcomboBox.currentText())
-        samplingRate = float(self.samplingcomboBox.currentText())
+        self.samplingRate = float(self.samplingcomboBox.currentText())
         time = (v_end - v_start) / (scanRate/1000)
         mode = self.modecomboBox.currentIndex()
-        num_elements = int(time * samplingRate * 1000)
+        num_elements = int(time * self.samplingRate * 1000)
         time_array = np.linspace(0, time, num_elements)
 
         if mode == 0:
-            voltage_array = np.linspace(v_start, v_end, num_elements)
+            self.voltage_array = np.linspace(v_start, v_end, num_elements)
         elif mode == 1:
             first_half = np.linspace(v_start, v_end, int(num_elements/2)) 
             second_half = np.linspace(v_end, v_start, int(num_elements/2))
-            voltage_array = np.concatenate((first_half, second_half))
+            self.voltage_array = np.concatenate((first_half, second_half))
 
         color = self.colors[self.colorIndex % len(self.colors)]
-        self.potentialwidget.plot(time_array, voltage_array, pen=pg.mkPen(color))
+        self.potentialwidget.plot(time_array, self.voltage_array, pen=pg.mkPen(color))
+        return 
 
     def plotCurrent(self):
         self.colorIndex += 1
-
     
     def read_from_serial(self):
         if self.serialPortHandle.isOpen():
@@ -148,26 +153,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.serialPortHandle.write(data)
             except serial.SerialException as e:
                 self.statusBar().showMessage(f"Error: {e}")
-
-    def format_data(self):
-        # The first 2 bits are for the mode (0-3)
-        # The next 4 bits are for the scan rate (0-15)
-        # The next 4 bits are for the sampling rate (0-15)
-        # The next 8 bits are for the lower range (-1.0-1.0)
-        # The next 8 bits are for the upper range (-1.0-1.0)
-
-        scanRate = self.speedcomboBox.currentIndex()
-        samplingRate = self.samplingcomboBox.currentIndex()
-        mode = self.modecomboBox.currentIndex()
-        lowerRange = round(float(self.lowerrangelineEdit.text()), 2)
-        upperRange = round(float(self.upperrangelineEdit.text()), 2)
-
-        frame1 = 0x00
-        frame1 = frame1 | (mode << 4)
-        frame1 = frame1 | (scanRate)
-        frame3 = int((1 + lowerRange) * 127)
-        frame4 = int((1 + upperRange) * 127)
-        return [frame1, samplingRate, frame3, frame4]
 
     def stopClick(self):
         self.statusBar().showMessage("Cancelando...")
