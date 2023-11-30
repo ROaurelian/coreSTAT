@@ -142,11 +142,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return 
 
     def plotCurrent(self, data):
-        print(data)
         current = int(round(int(data) * (400/255))-200)
         self.current_array.append(current)
         self.senderIndex += 1
-        self.currentwidget.plot(self.voltage_array[:self.senderIndex], self.current_array, pen=pg.mkPen(self.color))
+        if self.senderIndex % 20 == 0:
+            self.currentwidget.plot(self.voltage_array[self.senderIndex-20:self.senderIndex], self.current_array[self.senderIndex-20:self.senderIndex], pen=pg.mkPen(self.color))
     
     def read_from_serial(self):
         if self.serialPortHandle.isOpen():

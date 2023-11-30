@@ -193,27 +193,7 @@
         <widget class="QComboBox" name="speedcomboBox">
          <item>
           <property name="text">
-           <string>10</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>20</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>50</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>100</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>200</string>
+           <string>300</string>
           </property>
          </item>
          <item>
@@ -223,7 +203,27 @@
          </item>
          <item>
           <property name="text">
-           <string>300</string>
+           <string>200</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>100</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>50</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>20</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>10</string>
           </property>
          </item>
         </widget>

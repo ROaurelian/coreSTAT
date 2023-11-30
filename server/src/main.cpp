@@ -14,7 +14,7 @@ void clearSerialBuffer() {
 }
 
 void setup() {
-  TCCR1B = TCCR1B & B11111000 | B00000001; //Set dividers to change PWM frequency 3.1 khz
+  TCCR1B = (TCCR1B & B11111000) | (B00000001); //Set dividers to change PWM frequency 3.1 khz
   Serial.begin(115200);
   pinMode(PWM_PIN,OUTPUT);
   pinMode(ADC_PIN,INPUT);
