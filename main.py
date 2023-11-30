@@ -18,6 +18,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.windowRefreshTimer = QTimer(self) 
         self.windowRefreshTimer.timeout.connect(self.listComPorts)
         self.windowRefreshTimer.start(500)
+
+        self.serialTimer = QTimer(self) 
+        self.senderIndex = 0
+        self.serialTimer.timeout.connect(self.communicate)
+        
         self.statusBar().showMessage("Desconectado") 
 
         self.lowerrangelineEdit.setText(str(-1.00))
@@ -96,23 +101,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.startButton.setEnabled(True)
         time.sleep(2)  # Wait for the connection to initialize
 
-        # Send voltage values to apply to the serial port
+        self.statusBar().showMessage("Analizando...")
         self.plotPotential()
-        self.statusBar().showMessage("Recibiendo...")
         self.period = round(float(1/(self.samplingRate*1000)),3)
-        voltagePWM = (self.voltage_array + 1) * 127
-        for i in range(len(voltagePWM)):
-            self.write_to_serial(bytes([int(voltagePWM[i])]))
-            time.sleep(self.period)
+        self.voltagePWM = (self.voltage_array + 1) * 127
+        self.serialTimer.start(int(self.period*1000))
             # self.read_from_serial()
-
-
 
     """     self.serialReadTimer = QTimer(self)
         self.serialReadTimer.timeout.connect(self.read_from_serial)
         self.serialReadTimer.start(20) """
     
-
+    def communicate(self):
+        self.write_to_serial(bytes([int(self.voltagePWM[self.senderIndex])]))
+        self.senderIndex += 1
+        if self.senderIndex == self.num_elements:
+            self.senderIndex = 0
+            self.serialTimer.stop()
+            self.statusBar().showMessage("Análisis finalizado")
+            return
+        pass
     
     def plotPotential(self):
         v_start = round(float(self.lowerrangelineEdit.text()), 2)
@@ -121,14 +129,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.samplingRate = float(self.samplingcomboBox.currentText())
         time = (v_end - v_start) / (scanRate/1000)
         mode = self.modecomboBox.currentIndex()
-        num_elements = int(time * self.samplingRate * 1000)
-        time_array = np.linspace(0, time, num_elements)
+        self.num_elements = int(time * self.samplingRate * 1000)
+        time_array = np.linspace(0, time, self.num_elements)
 
         if mode == 0:
-            self.voltage_array = np.linspace(v_start, v_end, num_elements)
+            self.voltage_array = np.linspace(v_start, v_end, self.num_elements)
         elif mode == 1:
-            first_half = np.linspace(v_start, v_end, int(num_elements/2)) 
-            second_half = np.linspace(v_end, v_start, int(num_elements/2))
+            first_half = np.linspace(v_start, v_end, int(self.num_elements/2)) 
+            second_half = np.linspace(v_end, v_start, int(self.num_elements/2))
             self.voltage_array = np.concatenate((first_half, second_half))
 
         color = self.colors[self.colorIndex % len(self.colors)]
