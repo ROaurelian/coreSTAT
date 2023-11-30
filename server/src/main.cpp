@@ -3,6 +3,10 @@
 #define PWM_PIN 10
 #define ADC_PIN A0
 
+int current10bit;
+uint8_t current8bit;
+uint8_t voltage;
+
 void clearSerialBuffer() {
   while (Serial.available() > 0) { 
     Serial.read(); // Read and discard the incoming byte
@@ -18,10 +22,13 @@ void setup() {
 
 void loop() {
   if (Serial.available() > 0) {
-    uint8_t voltage;
     voltage = Serial.read();
+    current10bit = analogRead(ADC_PIN);
+    current8bit = current10bit >> 2;
+    Serial.println(current8bit);
     analogWrite(PWM_PIN, voltage);
   }
+
   /* // Send data back as a hex string
   for (int i = 0; i < 4; i++) {
     if (values[i] < 16) {

@@ -20,7 +20,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.windowRefreshTimer.start(500)
 
         self.serialTimer = QTimer(self) 
-        self.senderIndex = 0
         self.serialTimer.timeout.connect(self.communicate)
         
         self.statusBar().showMessage("Desconectado") 
@@ -104,21 +103,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.statusBar().showMessage("Analizando...")
         self.plotPotential()
         self.period = round(float(1/(self.samplingRate*1000)),3)
+        self.senderIndex = 0
+        self.current_array = []
         self.voltagePWM = (self.voltage_array + 1) * 127
         self.serialTimer.start(int(self.period*1000))
-            # self.read_from_serial()
-
-    """     self.serialReadTimer = QTimer(self)
-        self.serialReadTimer.timeout.connect(self.read_from_serial)
-        self.serialReadTimer.start(20) """
     
     def communicate(self):
         self.write_to_serial(bytes([int(self.voltagePWM[self.senderIndex])]))
-        self.senderIndex += 1
-        if self.senderIndex == self.num_elements:
+        data = self.serialPortHandle.readline().decode().strip()
+        self.plotCurrent(data)
+        if self.senderIndex >= self.num_elements:
             self.senderIndex = 0
             self.serialTimer.stop()
             self.statusBar().showMessage("Análisis finalizado")
+            self.colorIndex += 1
             return
         pass
     
@@ -139,19 +137,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             second_half = np.linspace(v_end, v_start, int(self.num_elements/2))
             self.voltage_array = np.concatenate((first_half, second_half))
 
-        color = self.colors[self.colorIndex % len(self.colors)]
-        self.potentialwidget.plot(time_array, self.voltage_array, pen=pg.mkPen(color))
+        self.color = self.colors[self.colorIndex % len(self.colors)]
+        self.potentialwidget.plot(time_array, self.voltage_array, pen=pg.mkPen(self.color))
         return 
 
-    def plotCurrent(self):
-        self.colorIndex += 1
+    def plotCurrent(self, data):
+        print(data)
+        current = int(round(int(data) * (400/255))-200)
+        self.current_array.append(current)
+        self.senderIndex += 1
+        self.currentwidget.plot(self.voltage_array[:self.senderIndex], self.current_array, pen=pg.mkPen(self.color))
     
     def read_from_serial(self):
         if self.serialPortHandle.isOpen():
             try:
                 data = self.serialPortHandle.readline().decode().strip()
-                if data:
-                    self.statusBar().showMessage(f'Intruction set: {data}')
+                if data: print(data)
             except serial.SerialException as e:
                 self.statusBar().showMessage(f"Error: {e}")
 
