@@ -134,6 +134,8 @@ class Ui_MainWindow(object):
         self.startButton.setObjectName("startButton")
         self.cancelButton = QtWidgets.QPushButton(self.splitter)
         self.cancelButton.setObjectName("cancelButton")
+        self.clearButton = QtWidgets.QPushButton(self.splitter)
+        self.clearButton.setObjectName("clearButton")
         self.verticalLayout.addWidget(self.splitter)
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -179,6 +181,7 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "a"))
         self.startButton.setText(_translate("MainWindow", "Iniciar"))
         self.cancelButton.setText(_translate("MainWindow", "Cancelar"))
+        self.clearButton.setText(_translate("MainWindow", "Borrar"))
 from pyqtgraph import PlotWidget
 
 

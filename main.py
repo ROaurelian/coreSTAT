@@ -5,11 +5,15 @@ import serial.tools.list_ports
 import serial
 from mainWindow import Ui_MainWindow
 import time
+import numpy as np
+import pyqtgraph as pg
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.colorIndex = 0
+        self.colors = ['r', 'g', 'b', 'c', 'm', 'y']
         self.serialPortHandle = None
         self.windowRefreshTimer = QTimer(self) 
         self.windowRefreshTimer.timeout.connect(self.listComPorts)
@@ -29,6 +33,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.startButton.clicked.connect(self.startClick)
         self.cancelButton.clicked.connect(self.stopClick)
+        self.clearButton.clicked.connect(self.clearClick)
 
     def startClick(self):
         self.startButton.setEnabled(False)
@@ -93,18 +98,47 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         data = bytearray(self.format_data())
         self.write_to_serial(data)
-        self.read_from_serial()
+
+        self.plotPotential()
+
+
+        #self.read_from_serial()
+
 
     """     self.serialReadTimer = QTimer(self)
         self.serialReadTimer.timeout.connect(self.read_from_serial)
         self.serialReadTimer.start(20) """
+    
+    def plotPotential(self):
+        v_start = round(float(self.lowerrangelineEdit.text()), 2)
+        v_end = round(float(self.upperrangelineEdit.text()), 2)
+        scanRate = int(self.speedcomboBox.currentText())
+        samplingRate = float(self.samplingcomboBox.currentText())
+        time = (v_end - v_start) / (scanRate/1000)
+        mode = self.modecomboBox.currentIndex()
+        num_elements = int(time * samplingRate * 1000)
+        time_array = np.linspace(0, time, num_elements)
+
+        if mode == 0:
+            voltage_array = np.linspace(v_start, v_end, num_elements)
+        elif mode == 1:
+            first_half = np.linspace(v_start, v_end, int(num_elements/2)) 
+            second_half = np.linspace(v_end, v_start, int(num_elements/2))
+            voltage_array = np.concatenate((first_half, second_half))
+
+        color = self.colors[self.colorIndex % len(self.colors)]
+        self.potentialwidget.plot(time_array, voltage_array, pen=pg.mkPen(color))
+
+    def plotCurrent(self):
+        self.colorIndex += 1
+
     
     def read_from_serial(self):
         if self.serialPortHandle.isOpen():
             try:
                 data = self.serialPortHandle.readline().decode().strip()
                 if data:
-                    self.statusBar().showMessage(data)
+                    self.statusBar().showMessage(f'Intruction set: {data}')
             except serial.SerialException as e:
                 self.statusBar().showMessage(f"Error: {e}")
 
@@ -141,6 +175,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.serialPortHandle.close()
         self.startButton.setEnabled(True)
         self.statusBar().showMessage("Desconectado")
+
+
+    def clearClick(self):      
+        self.potentialwidget.clear()
+        self.currentwidget.clear()
+
+        self.currentwidget.setLabel("left", "Corriente (uA)")
+        self.currentwidget.setLabel("bottom", "Voltaje (V)")
+        self.currentwidget.setYRange(-200, 200)
+        self.currentwidget.setXRange(-1.0, 1.0)
+
+        self.potentialwidget.setLabel("left", "Voltaje (V)")
+        self.potentialwidget.setLabel("bottom", "Tiempo (s)")
+        
 
     def listComPorts(self):
         current_ports = set([self.portcomboBox.itemText(i) for i in range(self.portcomboBox.count())])

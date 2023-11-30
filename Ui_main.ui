@@ -321,6 +321,11 @@
          <string>Cancelar</string>
         </property>
        </widget>
+       <widget class="QPushButton" name="clearButton">
+        <property name="text">
+         <string>Borrar</string>
+        </property>
+       </widget>
       </widget>
      </item>
     </layout>
