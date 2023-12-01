@@ -4,78 +4,70 @@ from PyQt5.QtCore import QTimer
 import serial.tools.list_ports
 import serial
 from mainWindow import Ui_MainWindow
+import time
 import numpy as np
-import math
-
-num_elements = 1400  # number of elements in each array
-v_start = -1.0       # start voltage
-v_end = 1.0          # end voltage      
-
-# Function to simulate current response with a sigmoidal shape and peak
-def simulate_current(v_array, peak_pos, peak_height, peak_width):
-    # Simulate redox peak
-    gauss = peak_height * np.exp(-((v_array - peak_pos) ** 2) / (2 * peak_width ** 2))
-    log_argument = v_array - peak_pos
-    log_argument[log_argument <= 0] = np.min(v_array[v_array > 0])
-    log = 10*np.log(log_argument)+peak_height/2
-    return gauss + log
-
-def add_noise_with_max_error(current_array, max_error_percent=4):
-    max_error = max_error_percent / 100.0
-    # Calculate the noise level for each point (5% of the current value)
-    noise_level = max_error * current_array
-    # Generate random noise within the ±5% range for each point
-    noise = np.random.uniform(-1, 1, size=current_array.shape) * noise_level
-    # Add this noise to the original current values
-    noisy_current = current_array + noise
-    return noisy_current
+import pyqtgraph as pg
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.colorIndex = 0
+        self.colors = ['r', 'g', 'b', 'c', 'm', 'y']
         self.serialPortHandle = None
         self.windowRefreshTimer = QTimer(self) 
         self.windowRefreshTimer.timeout.connect(self.listComPorts)
         self.windowRefreshTimer.start(500)
+
+        self.serialTimer = QTimer(self) 
+        self.serialTimer.timeout.connect(self.communicate)
+        
         self.statusBar().showMessage("Desconectado") 
 
         self.lowerrangelineEdit.setText(str(-1.00))
         self.upperrangelineEdit.setText(str(1.00))
 
+        self.currentwidget.setLabel("left", "Corriente (uA)")
+        self.currentwidget.setLabel("bottom", "Voltaje (V)")
+        self.currentwidget.setYRange(-200, 200)
+        self.currentwidget.setXRange(-1.0, 1.0)
+
+        self.potentialwidget.setLabel("left", "Voltaje (V)")
+        self.potentialwidget.setLabel("bottom", "Tiempo (s)")
+
         self.startButton.clicked.connect(self.startClick)
         self.cancelButton.clicked.connect(self.stopClick)
+        self.clearButton.clicked.connect(self.clearClick)
 
     def startClick(self):
-        self.statusBar().showMessage("Conectando...")
         self.startButton.setEnabled(False)
-
-        # Serial connection routine
-        port = self.portcomboBox.currentText()
-        baudrate = self.baudratecomboBox.currentText()
-        if port == "":
-            self.statusBar().showMessage("Ningún puerto disponible")
-            self.startButton.setEnabled(True)
-            return
-        try:
-            self.serialPortHandle = serial.Serial(port, baudrate = int(baudrate), timeout=1)
-            self.statusBar().showMessage(f"Conectado a {port}")
-        except:
-            self.statusBar().showMessage(f"Error conectando a {port}")
-            self.startButton.setEnabled(True)
 
         # Params checking
         minPotential = -1.00
         maxPotential = 1.00
         minRange = 0.10
 
-        scanRate = int(self.speedcomboBox.currentText())
-        samplingRate = int(self.samplingcomboBox.currentText())
-        mode = int(self.modecomboBox.currentIndex())
+        baudrate = self.baudratecomboBox.currentText()
+
+        # LImitation of sampling rate based on baud rate
+        maxSamplingRate = 0
+        if baudrate == "9600":
+            maxSamplingRate = 0.48
+        elif baudrate == "19200":
+            maxSamplingRate = 0.96
+        elif baudrate == "57600":
+            maxSamplingRate = 2.88
+        elif baudrate == "115200":
+            maxSamplingRate = 5.76
+
+        if float(self.samplingcomboBox.currentText()) > maxSamplingRate:
+            self.statusBar().showMessage(f"Velocidad de muestreo no válida con baudrate (Máxima velocidad de muestreo: {maxSamplingRate}) kS/s")
+            self.startButton.setEnabled(True)
+            return
 
         try:
-            lowerRange = round(float(self.lowerrangelineEdit.text()), 1)
-            upperRange = round(float(self.upperrangelineEdit.text()), 1)
+            lowerRange = round(float(self.lowerrangelineEdit.text()), 2)
+            upperRange = round(float(self.upperrangelineEdit.text()), 2)
         except:
             self.statusBar().showMessage("Valores de rango no válidos")
             self.startButton.setEnabled(True)
@@ -92,44 +84,105 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lowerrangelineEdit.setText(str(lowerRange))
         self.upperrangelineEdit.setText(str(upperRange))
 
-        # Generate voltage array with a linear sweep forward and reverse
-        voltage_array = np.linspace(v_start, v_end, num_elements)
-        
-        peak_height = [160, 150, 130, 100, 75]
-        peak_pos = [-0.15, -0.16, -0.17, -0.18, -0.19]
+        self.statusBar().showMessage("Conectando...")
 
-        current_arrays = []
-        for i in range(5):  # Simulate 5 different scan rates
-            peak_width = 0.05 + i*0.01  # Change the peak width for each scan rate
-            current = simulate_current(voltage_array, peak_pos[i], peak_height[i], peak_width)
-            noisy_current_array = add_noise_with_max_error(current)
-            current_arrays.append(noisy_current_array)
+        # Serial connection routine
+        port = self.portcomboBox.currentText()
+        if port == "":
+            self.statusBar().showMessage("Ningún puerto disponible")
+            self.startButton.setEnabled(True)
+            return
+        try:
+            self.serialPortHandle = serial.Serial(port, baudrate = int(baudrate), timeout=1)
+            self.statusBar().showMessage(f"Conectado a {port}")
+        except:
+            self.statusBar().showMessage(f"Error conectando a {port}")
+            self.startButton.setEnabled(True)
+        time.sleep(2)  # Wait for the connection to initialize
 
-        # Make sure all arrays have 1400 elements
-        voltage_array = np.tile(voltage_array, (int(np.ceil(1400/len(voltage_array))),))[:1400]
-        current_arrays = [np.tile(i, (int(np.ceil(1400/len(i))),))[:1400] for i in current_arrays]
-        self.currentwidget.plot(voltage_array, current_arrays[0])
-        self.potentialwidget.plot(voltage_array)
+        self.statusBar().showMessage("Analizando...")
+        self.plotPotential()
+        self.period = round(float(1/(self.samplingRate*1000)),3)
+        self.senderIndex = 0
+        self.current_array = []
+        self.voltagePWM = (self.voltage_array + 1) * 127
+        self.serialTimer.start(int(self.period*1000))
+    
+    def communicate(self):
+        self.write_to_serial(bytes([int(self.voltagePWM[self.senderIndex])]))
+        data = self.serialPortHandle.readline().decode().strip()
+        self.plotCurrent(data)
+        if self.senderIndex >= self.num_elements:
+            self.senderIndex = 0
+            self.serialTimer.stop()
+            self.statusBar().showMessage("Análisis finalizado")
+            self.colorIndex += 1
+            return
+        pass
+    
+    def plotPotential(self):
+        v_start = round(float(self.lowerrangelineEdit.text()), 2)
+        v_end = round(float(self.upperrangelineEdit.text()), 2)
+        scanRate = int(self.speedcomboBox.currentText())
+        self.samplingRate = float(self.samplingcomboBox.currentText())
+        time = (v_end - v_start) / (scanRate/1000)
+        mode = self.modecomboBox.currentIndex()
+        self.num_elements = int(time * self.samplingRate * 1000)
+        time_array = np.linspace(0, time, self.num_elements)
 
-    """     self.serialReadTimer = QTimer(self)
-        self.serialReadTimer.timeout.connect(self.read_from_serial)
-        self.serialReadTimer.start(20) """
+        if mode == 0:
+            self.voltage_array = np.linspace(v_start, v_end, self.num_elements)
+        elif mode == 1:
+            first_half = np.linspace(v_start, v_end, int(self.num_elements/2)) 
+            second_half = np.linspace(v_end, v_start, int(self.num_elements/2))
+            self.voltage_array = np.concatenate((first_half, second_half))
+
+        self.color = self.colors[self.colorIndex % len(self.colors)]
+        self.potentialwidget.plot(time_array, self.voltage_array, pen=pg.mkPen(self.color))
+        return 
+
+    def plotCurrent(self, data):
+        current = int(round(int(data) * (400/255))-200)
+        self.current_array.append(current)
+        self.senderIndex += 1
+        if self.senderIndex % 20 == 0:
+            self.currentwidget.plot(self.voltage_array[self.senderIndex-20:self.senderIndex], self.current_array[self.senderIndex-20:self.senderIndex], pen=pg.mkPen(self.color))
     
     def read_from_serial(self):
         if self.serialPortHandle.isOpen():
             try:
                 data = self.serialPortHandle.readline().decode().strip()
-                if data:
-                    self.statusBar().showMessage(data)
+                if data: print(data)
+            except serial.SerialException as e:
+                self.statusBar().showMessage(f"Error: {e}")
+
+    def write_to_serial(self, data):
+        if self.serialPortHandle.isOpen():
+            try:
+                self.serialPortHandle.write(data)
             except serial.SerialException as e:
                 self.statusBar().showMessage(f"Error: {e}")
 
     def stopClick(self):
         self.statusBar().showMessage("Cancelando...")
-        if self.serialPortHandle.isOpen():
+        if self.serialPortHandle and self.serialPortHandle.isOpen():
             self.serialPortHandle.close()
         self.startButton.setEnabled(True)
         self.statusBar().showMessage("Desconectado")
+
+
+    def clearClick(self):      
+        self.potentialwidget.clear()
+        self.currentwidget.clear()
+
+        self.currentwidget.setLabel("left", "Corriente (uA)")
+        self.currentwidget.setLabel("bottom", "Voltaje (V)")
+        self.currentwidget.setYRange(-200, 200)
+        self.currentwidget.setXRange(-1.0, 1.0)
+
+        self.potentialwidget.setLabel("left", "Voltaje (V)")
+        self.potentialwidget.setLabel("bottom", "Tiempo (s)")
+        
 
     def listComPorts(self):
         current_ports = set([self.portcomboBox.itemText(i) for i in range(self.portcomboBox.count())])
